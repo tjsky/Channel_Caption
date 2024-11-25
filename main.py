@@ -11,19 +11,39 @@ CHANNEL_SIGNATURES = {
     -1002345678901: "\n\n---\n来自 [频道 B](https://t.me/channelB)",
 }
 
-
 async def add_signature(update: Update, context):
     message = update.channel_post
     if not message:
         return
 
+    # 获取当前频道的签名
     chat_id = message.chat_id
     signature = CHANNEL_SIGNATURES.get(chat_id)
     if not signature:
-        return
+        return  
 
-    # 文字消息
-    if message.text:
+    # 检测是否是成组的媒体，比如多张图片组成的相册
+    if message.media_group_id:
+        if message.caption and message.caption.strip() == signature.strip():
+            return  
+        if message.media_group_id == context.chat_data.get("last_media_group_id"):
+            return  
+
+        context.chat_data["last_media_group_id"] = message.media_group_id
+    # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
+        new_caption = (message.caption or "") + signature
+        if len(new_caption) > 1024:
+            new_caption = (message.caption or "")[:1024 - len(signature)] + signature
+
+        await context.bot.edit_message_caption(
+            chat_id=chat_id,
+            message_id=message.message_id,
+            caption=new_caption,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+    # 非媒体组消息处理
+    elif message.text:
         new_text = message.text + signature
         await context.bot.edit_message_text(
             chat_id=chat_id,
@@ -31,10 +51,10 @@ async def add_signature(update: Update, context):
             text=new_text,
             parse_mode=ParseMode.MARKDOWN,
         )
-    # 图片、视频或文件消息
+        
     elif message.photo or message.video or message.document:
+    # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         new_caption = (message.caption or "") + signature
-        # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         if len(new_caption) > 1024:
             new_caption = (message.caption or "")[:1024 - len(signature)] + signature
             
