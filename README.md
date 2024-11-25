@@ -27,6 +27,6 @@ CHANNEL_SIGNATURES = {
 ```
 
 ## 运行
-1. 测试运行：`python -m interactive-bot`
+1. 测试运行：`python -m main`
 2. 正式运行：最好还是用类似 PM2、supervisor 之类的进程管理工具，来实现不间断运行、自动重启、失效重启等功能。
 如果你用的面板服，比如宝塔和1panel，他们有官方开发的守护进程工具用那个也行。
