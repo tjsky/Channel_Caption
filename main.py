@@ -5,33 +5,41 @@ from telegram.ext import Application, MessageHandler, filters
 # 设置 Bot Token
 BOT_TOKEN = "YOUR_BOT_TOKEN"
 
-# 签名内容，支持MARKDOWN格式
-SIGNATURE = "\n\n---\n来源： [我的频道](https://t.me/your_channel)"
+# 支持多频道不同签名，冒号前是频道的ID
+CHANNEL_SIGNATURES = {
+    -1001234567890: "\n\n---\n来自 [频道 A](https://t.me/channelA)",  # 签名内容，支持MARKDOWN格式
+    -1002345678901: "\n\n---\n来自 [频道 B](https://t.me/channelB)",
+}
+
 
 async def add_signature(update: Update, context):
-    # 监控消息
     message = update.channel_post
     if not message:
         return
 
+    chat_id = message.chat_id
+    signature = CHANNEL_SIGNATURES.get(chat_id)
+    if not signature:
+        return
+
     # 文字消息
     if message.text:
-        new_text = message.text + SIGNATURE
+        new_text = message.text + signature
         await context.bot.edit_message_text(
-            chat_id=message.chat_id,
+            chat_id=chat_id,
             message_id=message.message_id,
             text=new_text,
             parse_mode=ParseMode.MARKDOWN,
         )
-    # 图片、视频、文件消息
+    # 图片、视频或文件消息
     elif message.photo or message.video or message.document:
-        # 判定签名为空的情况
-        new_caption = (message.caption or "") + SIGNATURE
-        # 确保加完签名后不超过 Telegram 限制（非会员1024 字符，会员 2048 字符）
+        new_caption = (message.caption or "") + signature
+        # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         if len(new_caption) > 1024:
-            new_caption = (message.caption or "")[:1024 - len(SIGNATURE)] + SIGNATURE
+            new_caption = (message.caption or "")[:1024 - len(signature)] + signature
+            
         await context.bot.edit_message_caption(
-            chat_id=message.chat_id,
+            chat_id=chat_id,
             message_id=message.message_id,
             caption=new_caption,
             parse_mode=ParseMode.MARKDOWN,
