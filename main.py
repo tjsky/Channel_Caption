@@ -24,12 +24,12 @@ async def add_signature(update: Update, context):
             parse_mode=ParseMode.MARKDOWN,
         )
     # 图片、视频、文件消息
-    elif message.caption:
-        # 防止签名超出 Telegram 限制（开通TG会员可到2048个字符，请同步修改1024到2048）
-        new_caption = message.caption + SIGNATURE
+    elif message.photo or message.video or message.document:
+        # 判定签名为空的情况
+        new_caption = (message.caption or "") + SIGNATURE
+        # 确保加完签名后不超过 Telegram 限制（非会员1024 字符，会员 2048 字符）
         if len(new_caption) > 1024:
-            new_caption = message.caption[:1024 - len(SIGNATURE)] + SIGNATURE
-
+            new_caption = (message.caption or "")[:1024 - len(SIGNATURE)] + SIGNATURE
         await context.bot.edit_message_caption(
             chat_id=message.chat_id,
             message_id=message.message_id,
@@ -39,9 +39,7 @@ async def add_signature(update: Update, context):
 
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
-
     application.add_handler(MessageHandler(filters.ChatType.CHANNEL, add_signature))
-
     application.run_polling()
 
 if __name__ == "__main__":
