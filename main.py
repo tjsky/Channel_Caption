@@ -24,13 +24,13 @@ async def add_signature(update: Update, context):
 
     # 检测是否是成组的媒体，比如多张图片组成的相册
     if message.media_group_id:
-        if message.caption and message.caption.strip() == signature.strip():
-            return  
-        if message.media_group_id == context.chat_data.get("last_media_group_id"):
+        if context.chat_data.get("last_media_group_id") == message.media_group_id:
             return  
 
+        # 记下媒体组 ID
         context.chat_data["last_media_group_id"] = message.media_group_id
-    # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
+
+        # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         new_caption = (message.caption or "") + signature
         if len(new_caption) > 1024:
             new_caption = (message.caption or "")[:1024 - len(signature)] + signature
@@ -41,8 +41,9 @@ async def add_signature(update: Update, context):
             caption=new_caption,
             parse_mode=ParseMode.MARKDOWN,
         )
+        return
 
-    # 非媒体组消息处理
+    # 如果是单一消息（非媒体组）
     elif message.text:
         new_text = message.text + signature
         await context.bot.edit_message_text(
@@ -53,7 +54,8 @@ async def add_signature(update: Update, context):
         )
         
     elif message.photo or message.video or message.document:
-    # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
+        
+        # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         new_caption = (message.caption or "") + signature
         if len(new_caption) > 1024:
             new_caption = (message.caption or "")[:1024 - len(signature)] + signature
