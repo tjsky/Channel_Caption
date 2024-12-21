@@ -1,5 +1,5 @@
 # Channel_Caption
-自动给Telegram频道消息增加签名
+自动给Telegram频道消息增加签名，方便频道主实现宣传功能。带有排除关键词功能，以免错改其他bot的消息。
 
 ![](https://img.tjsky.net/2024/11/3ab85c5ef15491f1cd5282bc652b3105.png)
 
@@ -24,9 +24,14 @@ CHANNEL_SIGNATURES = {
     -1001234567890: "\n\n---\n来自 [频道 A](https://t.me/channelA)",  # 签名内容，支持MARKDOWN格式
     -1002345678901: "\n\n---\n来自 [频道 B](https://t.me/channelB)",
 }
+
+# 定义忽略添加签名的关键词列表
+IGNORED_KEYWORDS = ["#互推", "Powered by", "By：", "订阅频道", "加入群聊"]
+
 ```
 
+
 ## 运行
-1. 测试运行：`python -m main`
+1. 测试运行：`python main.py`
 2. 正式运行：最好还是用类似 PM2、supervisor 之类的进程管理工具，来实现不间断运行、自动重启、失效重启等功能。
 如果你用的面板服，比如宝塔和1panel，他们有官方开发的守护进程工具用那个也行。
