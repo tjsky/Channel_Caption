@@ -11,23 +11,38 @@ CHANNEL_SIGNATURES = {
     -1002345678901: "\n\n---\n来自 [频道 B](https://t.me/channelB)",
 }
 
+# 定义忽略添加签名的关键词列表
+IGNORED_KEYWORDS = ["#互推", "Powered by", "By：", "订阅频道", "加入群聊"]
+
+# 检查消息是不是含有忽略词的
+def contains_ignored_keywords(text):
+    return any(keyword in text for keyword in IGNORED_KEYWORDS)
+
 async def add_signature(update: Update, context):
     message = update.channel_post
     if not message:
         return
 
-    # 获取当前频道的签名
+    # 获取消息当前签名
     chat_id = message.chat_id
     signature = CHANNEL_SIGNATURES.get(chat_id)
     if not signature:
         return  
 
-    # 检测是否是成组的媒体，比如多张图片组成的相册
+    # 检测是否包含忽略的关键词
+    if message.text and contains_ignored_keywords(message.text):
+        return  
+
+    if message.caption and contains_ignored_keywords(message.caption):
+        return  
+
+    # 是媒体组中的消息吗？
     if message.media_group_id:
+
         if context.chat_data.get("last_media_group_id") == message.media_group_id:
             return  
 
-        # 记下媒体组 ID
+
         context.chat_data["last_media_group_id"] = message.media_group_id
 
         # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
@@ -43,7 +58,7 @@ async def add_signature(update: Update, context):
         )
         return
 
-    # 如果是单一消息（非媒体组）
+    # 单一消息
     elif message.text:
         new_text = message.text + signature
         await context.bot.edit_message_text(
@@ -52,14 +67,10 @@ async def add_signature(update: Update, context):
             text=new_text,
             parse_mode=ParseMode.MARKDOWN,
         )
-        
     elif message.photo or message.video or message.document:
-        
-        # 确保新的签名不超过 Telegram 限制（非会员 1024 字符，会员 2048 字符）
         new_caption = (message.caption or "") + signature
         if len(new_caption) > 1024:
             new_caption = (message.caption or "")[:1024 - len(signature)] + signature
-            
         await context.bot.edit_message_caption(
             chat_id=chat_id,
             message_id=message.message_id,
