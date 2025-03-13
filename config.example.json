@@ -1,0 +1,14 @@
+{
+    "BOT_TOKEN": "123456789:ABCDEFG_HIJKLMN",
+    "CHANNEL_SIGNATURES": {
+        "-100111111": "\n\n BY: [频道1](https://t.me/1)",
+        "-100222222": "\n\n BY: [频道2](https://t.me/2)",
+        "-100333333": "\n\n BY: [频道3](https://t.me/3)",
+        "-100444444": "\n\n BY: [频道4](https://t.me/4)",
+        "-100555555": "\n\n BY: [频道5](https://t.me/5)",
+        "-100666666": "\n\n BY: [频道6](https://t.me/6)"
+    },
+    "IGNORED_KEYWORDS": ["关键词1", "关键词2", "关键词3", "关键词4", "关键词5"], 
+    "REACTION_ENABLED": true,
+    "DEFAULT_REACTIONS": [ "❤️", "👍","🔥","😍","🥰"]
+}  
